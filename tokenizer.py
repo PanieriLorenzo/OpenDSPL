@@ -6,7 +6,7 @@ class Token_Type(Enum):
     EOF = 0
     WHITESPACE = 5
     COMMENT = 10
-    IDENTIFIER = 20     # generic
+    IDENTIFIER = 20
     DECLARATION = 30
     TYPE_BYTE = 50
     TYPE_I16 = 55
@@ -80,19 +80,22 @@ class Tokenizer:
     def __init__(self, string):
         self.string = string
 
-    def nextToken(self):
+    def nextToken(self) -> Token:
+        # check if empty
+        if len(self.string) <= 0:
+            return Token(None, Token_Type.EOF)
 
         # match COMMENT
-        #   discard
+        #   skip
         if match := re.match(r"#.*", self.string):
             self.string = self.string[len(match.group()):]
-            return None
+            return self.nextToken()
         
         # match WHITESPACE
-        #   discard
+        #   skip
         if match := re.match(r"\s+", self.string):
             self.string = self.string[len(match.group()):]
-            return None
+            return self.nextToken()
         
         # match IMPORT
         #   valueless token
@@ -127,13 +130,13 @@ class Tokenizer:
         # match COMMA
         #   valueless token
         if match := re.match(r",", self.string):
-            self.string = self.string[len(match.group())]
+            self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.COMMA)
         
         # match SEMICOLON
         #   valueless token
         if match := re.match(r";", self.string):
-            self.string = self.string[len(match.group())]
+            self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.SEMICOLON)
 
         # match TYPE_BYTE
@@ -206,23 +209,23 @@ class Tokenizer:
         #   valueless token
         if match := re.match(r"(?<!\w)bool(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
-            return Token(None, Token_Type.BOOL)
+            return Token(None, Token_Type.TYPE_BOOL)
         
         # match TYPE_NUMBER
         #   valueless token
         if match := re.match(r"(?<!\w)number(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
-            return Token(None, Token_Type.NUMBER)
+            return Token(None, Token_Type.TYPE_NUMBER)
         
         # match TYPE_RECORD
         #   valueless token
         if match := re.match(r"(?<!\w)record(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
-            return Token(None, Token_Type.RECORD)
+            return Token(None, Token_Type.TYPE_RECORD)
         
         # match TYPE_PROCESS
         #   valueless token
-        if match := re.match(r"(?<!\w)module(?!\w)", self.string):
+        if match := re.match(r"(?<!\w)process(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.TYPE_PROCESS)
         
@@ -258,7 +261,7 @@ class Tokenizer:
         
         # match OPEN_BRACE
         #   valueless token
-        if match := re.match(r"\{" self.string):
+        if match := re.match(r"\{", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OPEN_BRACE)
         
@@ -270,101 +273,195 @@ class Tokenizer:
         
         # match LITER_INT
         #   parse value
-        if match := re.match(r"(?<!\w)-?[0-9]+(?!\w)", self.string):
+        if match := re.match(r"(?<!\w)-?[0-9]+(?![\w\.])", self.string):
             self.string = self.string[len(match.group()):]
             return Token(int(match.group()), Token_Type.LITER_INT)
         
         # match LITER_FLOAT
         #   parse value
-        if match := re.match(r"(?<!\w)-?[0-9]*\.[0-9]+(?!\w)"):
+        if match := re.match(r"(?<!\w)-?[0-9]*\.[0-9]+(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(float(match.group()), Token_Type.LITER_FLOAT)
         
         # match LITER_BOOL
         #   value is either true or false
-        if match := re.match(r"(?<!\w)true(?!\w)"):
+        if match := re.match(r"(?<!\w)true(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(True, Token_Type.LITER_BOOL)
-        if match := re.match(r"(?<!\w)false(?!\w)")
+        if match := re.match(r"(?<!\w)false(?!\w)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(True, Token_Type.LITER_BOOL)
         
         # match LITER_CHAR
         #   return parsed ASCII value
-        #   FIXME: I dunno if this returns the letter only or the quotes as well
-        if match := re.match(r"'([^']|\\')?'"):
+        if match := re.match(r"'([^']|\\')?'", self.string):
             self.string = self.string[len(match.group()):]
             return Token(match.group()[1], Token_Type.LITER_CHAR)
         
         # match LITER_STR
         #   return raw string
-        #   FIXME: I dunno if this returns the letters only or also the quotes
-        if match := re.match(r'"([^"]|\\")*"'):
+        if match := re.match(r'(?<!\\)".*?(?<!\\)"', self.string):
             length = len(match.group())
             self.string = self.string[length:]
             return Token(match.group()[1:length-1], Token_Type.LITER_STR)
         
         # match OP_ASSIGN
         #   valueless token, avoid matching ==
-        if match := re.match(r"(?<!=)=(?!=)"):
+        if match := re.match(r"(?<!=)=(?!=)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_ASSIGN)
 
         # match OP_ADD
         #   valueless token
-        if match := re.match(r"\+"):
+        if match := re.match(r"\+", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_ADD)
         
         # match OP_SUB
         #   valueless token, avoid matching ->
-        if match := re.match(r"-(?!>)"):
+        if match := re.match(r"-(?!>)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_SUB)
         
         # match OP_MUL
         #   valueless token, avoid matching **
-        if match := re.match(r"(?<!\*)\*(?!\*)"):
+        if match := re.match(r"(?<!\*)\*(?!\*)", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_MUL)
         
         # match OP_POW
         #   valueless token
-        if match := re.match(r"\*\*"):
+        if match := re.match(r"\*\*", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_POW)
         
         # match OP_DIV
         #   valueless token
-        if match := re.match(r"/"):
+        if match := re.match(r"/", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_DIV)
         
         # match OP_MOD
         #   valueless token
-        if match := re.match(r"%"):
+        if match := re.match(r"%", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_MOD)
         
         # match OP_DELAY
         #   valueless token
-        if match := re.match(r"@"):
+        if match := re.match(r"@", self.string):
             self.string = self.string[len(match.group()):]
             return Token(None, Token_Type.OP_DELAY)
         
         # match OP_BIT_AND
+        #   valueless token
+        if match := re.match(r"&", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_AND)
         
-
-
-
-
-
-
+        # match OP_BIT_OR
+        #   valueless token
+        if match := re.match(r"\|", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_OR)
         
-
+        # match OP_BIT_NOT
+        #   valueless token
+        if match := re.match(r"~", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_NOT)
         
+        # match OP_BIT_XOR
+        #   valueless token
+        if match := re.match(r"\^", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_XOR)
+        
+        # match OP_BIT_LSH
+        #   valueless token
+        if match := re.match(r"<<", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_LSH)
+        
+        # match OP_BIT_RSH
+        #   valueless token
+        if match := re.match(r">>", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BIT_RSH)
+        
+        # match OP_BOOL_AND
+        #   valueless token
+        if match := re.match(r"(?<!\w)and(?!\w)", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BOOL_AND)
+        
+        # match OP_BOOL_OR
+        #   valueless token
+        if match := re.match(r"(?<!\w)or(?!\w)", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BOOL_AND)
+        
+        # match OP_BOOL_NOT
+        #   valueless token
+        if match := re.match(r"(?<!\w)not(?!\w)", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_BOOL_NOT)
+        
+        # match OP_CMP_GREAT
+        #   valueless token, avoid matching >> or >=
+        if match := re.match(r"(?<!>)>(?![>=])", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_GREAT)
+        
+        # match OP_CMP_GEQ
+        #   valueless token
+        if match := re.match(r">=", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_GEQ)
+        
+        # match OP_CMP_LESS
+        #   valueless token, avoid matching << or <=
+        if match := re.match(r"(?<!<)<(?![<=])", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_LESS)
+        
+        # match OP_CMP_LEQ
+        #   valueless token
+        if match := re.match(r"<=", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_LEQ)
+        
+        # match OP_CMP_EQ
+        #   valueless token
+        if match := re.match(r"==", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_EQ)
+        
+        # match OP_CMP_NEQ
+        #   valueless token
+        if match := re.match(r"!=", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.OP_CMP_NEQ)
+        
+        # match ARROW
+        #   valueless token
+        if match := re.match(r"->", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(None, Token_Type.ARROW)
+        
+        # match IDENTIFIER
+        #   the value is the raw string (name of identifier)
+        if match := re.match(r"[a-zA-Z_]+\w*", self.string):
+            self.string = self.string[len(match.group()):]
+            return Token(match.group(), Token_Type.IDENTIFIER)
+
+        # if nothing matches, return error
+        return Token(None, Token_Type.ERR)
+
     def dbg(self):
         return self.string
+
+
 
 
 
