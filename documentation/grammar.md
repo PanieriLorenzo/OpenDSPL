@@ -10,7 +10,7 @@ This grammar is written in a PEG-like syntax.
 
 # === misc =====================================================================
 comment     = ~r"#.*"
-ws          = ~r"\s+"
+_           = ~r"\s+"   # whitespace
 
 # === identifier ===============================================================
 identifier  = ~r"[a-zA-Z_]\w*"
