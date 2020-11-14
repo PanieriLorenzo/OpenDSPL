@@ -1,5 +1,6 @@
 # DSPL Grammar
-This grammar is written in a PEG-like syntax.
+This grammar is written in a PEG-like syntax. \
+__TODO:__ this is outdated!
 
 ```R
 ################################
