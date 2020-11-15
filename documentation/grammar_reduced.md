@@ -70,7 +70,7 @@ lit_list    = lit_str
 lit_record  = "(" _ (definition / init) _ ("," _ (definition / init) _ )* ")"
 lit_byte    = r"0[xX][0-9a-fA-F]+" / r"'([^']|\\')?'"
 lit_int     = r"-?[0-9]+"
-lit_float   = r"?[0-9]*\.[0-9]+"
+lit_float   = r"-?[0-9]*\.[0-9]+"
 lit_bool    = r"true|false"
 lit_str     = r'(?<!\\)".*?(?<!\\)"'
 
@@ -82,13 +82,12 @@ lmbda_ret   = "->" _ type
 lmbda_block = "{" statement* "}"
 
 # === misc =====================================================================
-comment     = ~r"#.*"
-__          = ~r"\s+"   # mandatory whitespace
-_           = ~r"\s*"   # optional whitespace
+comment     = r"#.*"
+__          = r"\s+"   # mandatory whitespace
+_           = r"\s*"   # optional whitespace
 
 # === identifiers ==============================================================
-identifier  = ~r"[a-zA-Z_]\w*"
-
+identifier  = r"[a-zA-Z_]\w*"
 
 
 ######################

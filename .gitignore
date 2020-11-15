@@ -1,2 +1,12 @@
 # python cache
 __pycache__/
+
+# auto-generated files
+*.dot
+*.gv
+
+# temp files
+temp.*
+_temp.*
+TEMP.*
+_TEMP.*
