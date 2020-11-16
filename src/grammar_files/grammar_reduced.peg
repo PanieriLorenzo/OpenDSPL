@@ -1,22 +1,24 @@
-program     = statement* EOF
+comment     = r"#.*"
+program     = (statement / comment)* EOF
 statement   = ("quit" / expr_stat) ";"
 expr_stat   = init / assignment / definition / return / expr
-expr        = simp_expr / compound_expr / plug_expr
+expr        = plug_expr / simp_expr / compound_expr
 definition  = identifier ":" type
-assignment  = record_access / list_access / identifier "=" expr
+assignment  = (record_access / list_access / identifier) "=" expr
 init        = identifier ":" type "=" expr
 return      = "return" expr
 plug_expr   = simp_expr "->" plug_expr
+            / simp_expr "->" simp_expr
 simp_expr   = term
-            / unary_expr
             / binary_expr
+            / unary_expr
 unary_expr  = unary_op term
 binary_expr = binary_op term term
-term        = record_access
+term        = call
+            / record_access
             / list_access
             / literal
             / identifier
-            / call
             / unary_expr
             / binary_expr
             / "(" simp_expr ")"
@@ -28,13 +30,14 @@ type        = "int" / "float" / "byte" / "bool" / "record" / list / "process"
 list        = "[" type "]"
 unary_op    = "not" / "~" / "-"
 binary_op   = "and" / "or" / "@" / "&" / "|" / "^" / "+" / "-" / "*" / "/" / "%"
-call        = identifier "(" (plug_expr ("," plug_expr )* ) ")"
+call        = identifier "(" (plug_expr ("," plug_expr )* )? ")"
 record_access   = identifier "." identifier
                 / identifier "." record_access
 list_access     = identifier "[" simp_expr "]"
-literal     = lit_byte / lit_int / lit_float / lit_bool
+literal     = lit_byte / lit_float / lit_int / lit_bool
 lit_list    = lit_str
             / "[" identifier? ("," identifier )* "]"
+            / "[" expr ("," expr)* "]"
 lit_record  = "(" (definition / init) ("," (definition / init) )* ")"
             / "(" expr ("," expr)* ")"
 lit_byte    = r"0[xX][0-9a-fA-F]+" / r"'([^']|\\')?'"
@@ -47,5 +50,4 @@ lmbda_param = "(" definition? ("," definition )* ")"
 lmbda_ret   = "->" type
             / "->" "(" type? ("," type)* ")"
 lmbda_block = "{" statement* "}"
-comment     = r"#.*"
 identifier  = r"[a-zA-Z_]\w*"
