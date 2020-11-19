@@ -5,7 +5,9 @@ expr_stat   = init / assignment / definition / return / expr
 expr        = plug_expr / simp_expr / compound_expr
 definition  = identifier ":" type
 assignment  = (record_access / list_access / identifier) "=" expr
+            / (record_access / list_access / identifier) "=" def_record
 init        = identifier ":" type "=" expr
+            / identifier ":" "record" "=" def_record
 return      = "return" expr
 plug_expr   = simp_expr "->" plug_expr
             / simp_expr "->" simp_expr
@@ -19,8 +21,8 @@ term        = call
             / list_access
             / literal
             / identifier
-            / unary_expr
             / binary_expr
+            / unary_expr
             / "(" simp_expr ")"
 compound_expr   = lambda
                 / lit_list
@@ -28,9 +30,15 @@ compound_expr   = lambda
 type        = "int" / "float" / "byte" / "bool" / "record" / list / "process"
             / identifier
 list        = "[" type "]"
-unary_op    = "not" / "~" / "-"
-binary_op   = "and" / "or" / "@" / "&" / "|" / "^" / "+" / "-" / "*" / "/" / "%"
-call        = identifier "(" (plug_expr ("," plug_expr )* )? ")"
+unary_op    = "~" / "-"
+            / un_bool_op
+un_bool_op  = "not"
+binary_op   = bin_math_op
+            / bin_bool_op
+bin_math_op = "@" / "&" / "|" / "^" / "+" / "-" / "*" / "/" / "%"
+            / "<" / "<=" / "==" / "!=" / ">=" / ">"
+bin_bool_op     = "and" / "or"
+call        = identifier "(" (expr ("," expr )* )? ")"
 record_access   = identifier "." identifier
                 / identifier "." record_access
 list_access     = identifier "[" simp_expr "]"
@@ -38,8 +46,8 @@ literal     = lit_byte / lit_float / lit_int / lit_bool
 lit_list    = lit_str
             / "[" identifier? ("," identifier )* "]"
             / "[" expr ("," expr)* "]"
-lit_record  = "(" (definition / init) ("," (definition / init) )* ")"
-            / "(" expr ("," expr)* ")"
+def_record  = "(" (definition / init) ("," (definition / init) )* ")"
+lit_record  = "(" expr ("," expr)* ")"
 lit_byte    = r"0[xX][0-9a-fA-F]+" / r"'([^']|\\')?'"
 lit_int     = r"-?[0-9]+"
 lit_float   = r"-?[0-9]*\.[0-9]+"

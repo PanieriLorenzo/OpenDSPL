@@ -1,0 +1,5 @@
+foo: int = 5;
+bar: int = 1;
+in: source = ("in.wav", 44100);
+out: sink = ("out.wav");
+out.write = * (+ in.read foo) bar;

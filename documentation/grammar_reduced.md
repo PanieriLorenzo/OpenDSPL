@@ -88,40 +88,4 @@ _           = r"\s*"   # optional whitespace
 
 # === identifiers ==============================================================
 identifier  = r"[a-zA-Z_]\w*"
-
-
-######################
-#                    #
-#   Semantic rules   #
-#                    #
-######################
-# semantic rules are implemented during a second pass on the AST produced by the
-# parser
-
-# === incompatible types =======================================================
-
-
-# === undefined symbols ========================================================
-
-
-# === const lookup table =======================================================
-
-
-# === signal path definition ===================================================
-
-
-#########################
-#                       #
-#   Interpreter rules   #
-#                       #
-#########################
-# interpreter rules are only triggered at run-time
-
-# === arithmetic errors ========================================================
-# division by zero
-# delay by negative number
-
-# === identifier hash table ====================================================
-
-# === expression stack / queue =================================================
 ```
