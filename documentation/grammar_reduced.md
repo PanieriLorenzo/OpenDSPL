@@ -37,7 +37,8 @@ The syntax of DSPL is made so as to minimize the amount of keywords the programm
 + `number`
 + `process`
 + `record`
-+ `module`
++ `module` (not implemented)
++ `import` (not implemented)
 + `int`
 + `float`
 + `byte`
@@ -51,6 +52,9 @@ else: int = some_other_expression;
 result: int = if(then, else);
 ```
 This makes use of the fact that boolean variables are callable in OpenDSPL. Booleans take two expressions as parameters and returns the first if the value of the boolean is true and returns the second if the value is false.
+
+## Planned features
+<!-- TODO: -->
 
 
 <!-- TODO: this is outdated! -->
