@@ -51,6 +51,7 @@ Booleans take two expressions as parameters and returns the first if the value
 of the boolean is true and returns the second if the value is false.
 # Language Specification
 ## Fundamental Principles of The Grammar
+1. Variables are immutable.
 1. Every statement produces or modifies a symbol, no statement can be a raw
 expression. At interpretation type, the program is thus converted into a list of
 symbols.
@@ -94,12 +95,25 @@ accessed independently by separate calls to the same function, meaning that no
 state is leaked between parallel calls to the lambda. The delay operator is
 completely blind to whatever happens on a separate event-stream.
 ## Records (Structs / Static Objects)
-
+Multiple variables can be bundled together into a single custom type called a
+record.
+```rust
+bar: record = ( x: float = 5.2, y: float );
+foo: bar; 
+foo.y = 2.5;
+```
 ## Conditionals
-
+Booleans are callable, this is the preferred method of performing conditional
+statements.
+```rust
+foo: bool = some_boolean_expression;
+then: int = some_expression;
+else: int = some_other_expression;
+result: int = foo(then, else);
+```
 ## Iterators (Not Yet Implemented)
-
-
+Iterators send out N events for every incoming event. These are not implemented
+yet.
 # Planned Features
 + clocks
 + modules and imports
