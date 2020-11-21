@@ -1,16 +1,9 @@
-# OpenDSPL PEG grammar file.
-#   author = "Lorenzo Panieri"
-#   license = "MIT"
-#   version = "0.1.0-indev+1"
-#   status = "Development"
-
-# === BASIC CONSTRUCTS =========================================================
 comment     = r"#.*"
 program     = (statement / comment)* EOF
 statement   = (init / assignment / definition / return) ";"
 expr        = plug_expr / simp_expr
 
-# === STATEMENTS ===============================================================
+
 definition  = identifier ":" (type / "record" / "list" / "process")
             / identifier ":" identifier
 assignment  = (record_access / identifier / list_access) "=" ( expr / lit_record / lit_list)
@@ -21,7 +14,7 @@ init        = identifier ":" type "=" expr
             / identifier ":" "process" "=" lambda
 return      = "return" expr
 
-# === EXPRESSIONS ==============================================================
+
 plug_expr   = simp_expr "->" plug_expr
             / simp_expr "->" simp_expr
 simp_expr   = term
@@ -38,7 +31,7 @@ term        = call
             / unary_expr
             / "(" simp_expr ")"
 
-# === TYPES & LITERALS =========================================================
+
 type        = "int" / "float" / "byte" / "bool"
 list        = "[" type "]"
 record_access   = identifier "." identifier
@@ -58,7 +51,7 @@ lmbda_param = "(" definition? ("," definition )* ")"
 lmbda_ret   = "->" (type / list)
 lmbda_block = "{" statement* "}"
 
-# === OPERATORS ================================================================
+
 unary_op    = "~" / "-"
             / un_bool_op
 un_bool_op  = "not"
@@ -69,5 +62,5 @@ bin_math_op = "@" / "&" / "|" / "^" / "+" / "-" / "*" / "/" / "%"
 bin_bool_op     = "and" / "or"
 call        = identifier "(" (expr ("," expr )* )? ")"
 
-# === IDENTIFIER ===============================================================
+
 identifier  = r"[a-zA-Z_]\w*"

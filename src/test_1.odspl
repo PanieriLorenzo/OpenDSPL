@@ -2,7 +2,7 @@ foo: int = 5;
 bar: int = 1;
 # source and sink are implicitly defined types, these are added to the source
 # code at the interpreter stage.
-in: source = ("in.wav", 44100); # named types are implicitly initialized as empty records
+in: source; # named types are implicitly initialized as empty records
 in.path = "in.wav";
 in.rate = 44100;
 out: sink;

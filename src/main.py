@@ -2,7 +2,7 @@ import dspl_parser as pr
 import dspl_interpret as nt
 
 def main():
-    with open('grammar_files/grammar_reduced.peg', 'r') as file:
+    with open('grammar_files/_grammar.peg', 'r') as file:
         grammar = file.read()
 
     with open('test_1.odspl', 'r') as file:
