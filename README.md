@@ -26,7 +26,7 @@ imperative for statement.
 ### Atomic Syntax
 The syntax of DSPL is made so as to minimize the amount of keywords the 
 programmer must learn. In fact the list of all keywords is fairly short:
-+ `number`
++ `number` (not implemented)
 + `process`
 + `record`
 + `module` (not implemented)
@@ -73,6 +73,76 @@ exception!).
 foo: process = (a: int, b: int) -> int { return + a b; };
 x: int = foo(1, 2);
 ```
+
+## Plug Operator (Function Composition)
+Passing the output of a process into an input of another process can sometimes
+be verbose and hard to read, for this reason the plug operator `->` was introduced.
+Instead of writing something like this:
+```rust
+some_variable = foo(bar(baz(some_input)));
+```
+We can write something like:
+```rust
+some_variable = some_input -> baz() -> bar() -> foo();
+```
+Which is considerably more readable. Another advantage of the plug operator is
+making signals (that is valued event streams) be visually distinguishable from 
+parameters (static values):
+````rust
+some_input: source;
+some_param: int = 10;
+...
+some_output = some_input -> foo(some_param);
+````
+Here it is clear that `some_param` is not in the event stream, but rather is used
+to modify an event stream. Keep in mind that the above code is semantically
+identical to the following:
+````rust
+...
+some_output = foo(some_input, some_param);
+````
+And in fact, there is no requirement for using plug operators to distinguish
+signals and constants. For example in a low pass filter, one might want to
+automate a parameter, this would make that parameter an event stream, however
+keeping it as an explicit parameter would still clarify that the automation is
+somehow subordinated to the audio signal being filtered.
+
+The plug operator shows its power in long effect chains:
+````rust
+some_out = some_in -> fx1(a,b) -> fx2(c,d) -> fx3(e,f) -> fx4(g, h) -> fx5(i, j); 
+````
+Which would be quite unwieldy in a more traditional notation:
+````rust
+some_out = fx5(fx4(fx3(fx2(fx1(some_in, a, b), c, d), e, f), g, h), i, j);
+````
+### How The Plug Operator Works
+The plug operator `->` works by associating a value on the left of it to the
+first parameter of the function on the right. In case the right side is an
+expression, the plug operator looks for the placeholder identifier: `_`.
+Essentially the plug operator is performing substitution. Here the plug operator
+is used in an expression:
+````rust
+some_variable = some_other_variable -> (* _ 2);
+````
+**(The following is not yet implemented!)**\
+Plugging multiple parameters is also quite easy:
+````rust
+foo: process = (in1: int, in2: int, param: int) -> int {...};
+aux = some_in1 -> foo(,2);
+some_out = some_in2 -> aux;
+````
+When a parameter in a process call is left empty, the process returns an expression
+where that parameter is left undefined. Then applying the plug operator again
+will substitute the undefined parameters left to right (in this case there is
+only one). This is essentially an alternative notation for currying.
+In case many parameters are left undefined, the expression returned by the process
+might look something like this:
+````rust
+(/(*(+ _ __) 3) ___)
+````
+Here the placeholders `_, __, ___` are always associated left to right when
+adressed with a plug expression.
+
 ## Delay Operator
 The delay operator allows you to access prior values of a variable. Importantly,
 the operation is read-only, meaning that even though state is conserved between
