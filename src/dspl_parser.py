@@ -21,7 +21,8 @@ import dspl_types as tp
 # produces a list of symbols as an output
 
 class ParserDSPL:
-    def __init__(self, grammar, root="program", dbg=False):
+    # TODO: change root to program and make the program a list of function definitions
+    def __init__(self, grammar, root="block", dbg=False):
         self.parser = ParserPEG(grammar, root, comment_rule_name=None, debug=dbg, reduce_tree=True)
         self.parser.autokwd = True
     
@@ -45,75 +46,75 @@ class ParserDSPL:
 # takes AST from parser, and produces a list of symbols
 
 class Visitor(PTNodeVisitor):
-
-    # === BLOCK ================================================================
-    def visit_program(self, node, children):
-        statements = list()
-        for child in children:
-            statements.append(child[0])
-        block = tp.Block(statements)
-        return block
     
-    # === STATEMENT ============================================================
-    def visit_statement(self, node, children):
-        return children
-    
-    # === INIT =================================================================
-    def visit_init(self, node, children):
-        symb = None
-        # if type is a symbol, i.e. a custom type, rhs must be a record literal
-        # else it must be some other type
-        if isinstance(children[1], tp.Symbol):
-            if children[2].type == Type.STRUCT:
-                symb = tp.Symbol(type=Type.STRUCT, 
-                              name=children[0].name,
-                              value=children[2])
-            else:
-                raise TypeError("RHS is not a record literal")
+    # === DEFINITION ===========================================================
+    def visit_definition(self, node, children):
+        # validation: type and expr must have matching types
+        pass
 
-        # int
-        elif children[1] == "int":
-            if children[2].type == Type.I_INT:
-                symb = tp.Symbol(type=Type.I_INT,
-                              name=children[0].name,
-                              value=children[2])
+    # === BITWISE NOT EXPRESSION ===============================================
+    def visit_bit_not_expr(self, node, children):
+        # validation: operands must be integers
+        if(children[1].type != Type.IDENTIFIER 
+                and children[1].type != Type.I_INT
+                and children[1].type != Type.E_INT):
+            print("Semantic error near: ")
+            print("    '... ", node.value, " ...'")
+            print("can only use '~' on integer operands")
+            quit()
         
-        else:
-            raise TypeError("Unknown Type")
+        # if operand is immediate value, calculate the value beforehand
+        if(children[1].type == Type.I_INT):
+            symb = tp.Symbol(type=Type.I_INT, value= ~children[1].value)
+            return symb
 
-        return symb
-    
-    # === ASSIGNMENT ===========================================================
-    def visit_assignment(self, node, children):
-        # TODO: handle assignment to records
-        symb = tp.Symbol(type=children[1].type, name=children[0].name, value=children[1].value)
-        return symb
-    
-    # === EXPRESSIONS ==========================================================
-    def visit_binary_expr(self, node, children):
-        op = tp.Operation(True, children[1], children[2], op=children[0])
-        return op.toSymb()
-
-    # === NAMED SYMBOL (identifier) ============================================
-    def visit_identifier(self, node, children):
-        symb = tp.Symbol(name=node.value)
-        return symb
-    
-    def visit_record_access(self, node, children):
-        struct = tp.Struct([tp.Symbol(name=children[1].name)])
-        symb = tp.Symbol(type=Type.STRUCT, name=children[0].name, value=struct)
+        # if operand is identifier, check if identifier is defined, then generate
+        # source code
+        # TODO: check if undefined, then raise a semantic error
+        symb = tp.Symbol(type=Type.E_INT, value= "!" + str(children[1].value) )
         return symb
     
     # === UNNAMED SYMBOLS (literals) ===========================================
     def visit_lit_int(self, node, children):
-        symb = tp.Symbol(type=Type.I_INT, value=int(node.value))
+        symb = tp.Symbol(type=Type.I_INT, value= int(node.value))
         return symb
     
-    def visit_lit_record(self, node, children):
-        struct = tp.Struct(children)
-        symb = tp.Symbol(type=Type.STRUCT, value=struct)
+    def visit_lit_float(self, node, children):
+        symb = tp.Symbol(type=Type.I_FLOAT, value= float(node.value))
+        return symb
+
+    def visit_true(self, node, children):
+        return True
+    
+    def visit_false(self, node, children):
+        return False
+
+    def visit_lit_bool(self, node, children):
+        symb = tp.Symbol(type=Type.I_BOOL, value= node.value)
+
+
+    # === NAMED SYMBOLS (identifiers) ==========================================
+    # name generation scheme is the following:
+    # scope_name__identifier_name
+    # e.g if we run the following DSPL code inside a function called "foo":
+    #     bar: int = 14;
+    # we get the following Rust code:
+    #     let main__bar: i32 = 14;
+    #
+    # TODO: dynamically assign scope name
+    def visit_identifier(self, node, children):
+        symb = tp.Symbol(type=Type.IDENTIFIER, value= "main__" + node.value)
+        return symb
+
+    # === RESERVED SYMBOLS =====================================================
+    # these identifiers are reserved for core functionality
+
+    # HACK: for now this just returns 1 as an integer for testing purposes
+    def visit_dbg_in(self, node, children):
+        symb = tp.Symbol(type=Type.I_INT, value= 1)
         return symb
     
-    def visit_lit_str(self, node, children):
-        symb = tp.Symbol(type=Type.I_STR, value=node.value[1:-1])
+    # HACK: for now this takes integers and prints them
+    def visit_dbg_out(self, node, children):
+        symb = tp.Symbol(type=Type.CODE, value= "println!(\"{{}}\", {});")
         return symb

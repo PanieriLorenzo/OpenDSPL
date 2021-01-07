@@ -2,7 +2,7 @@ import dspl_parser as pr
 import dspl_interpret as nt
 
 def main():
-    with open('grammar_files/_grammar.peg', 'r') as file:
+    with open('grammar_files/_micro_grammar.peg', 'r') as file:
         grammar = file.read()
 
     with open('test_1.odspl', 'r') as file:
@@ -11,13 +11,14 @@ def main():
 
     # === PARSER / SEMANTIC ANALYSIS ===========================================
     # takes raw code string, converts it into a list of interdependant symbols
-    parser = pr.ParserDSPL(grammar, root="program", dbg=False)
+    parser = pr.ParserDSPL(grammar, root="block", dbg=False)
     program = parser.parse(input)
+    print(program.value)
 
 
     # === INTERPRETER ==========================================================
     # takes a list of interdependant symbols and returns runnable code abstraction
-    abstraction = nt.interpret(program)
+    # abstraction = nt.interpret(program)
 
 
     # === OBJECT FILE SERIALIZER ===============================================

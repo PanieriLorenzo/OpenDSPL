@@ -1,5 +1,5 @@
 comment     = r"#.*"
-program     = (statement / comment)* EOF
+block       = (statement / comment)* EOF?
 statement   = definition ";"
 
 

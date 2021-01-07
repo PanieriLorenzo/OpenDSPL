@@ -1,10 +1,3 @@
-foo: int = 5;
-bar: int = 1;
-# source and sink are implicitly defined types, these are added to the source
-# code at the interpreter stage.
-in: source; # named types are implicitly initialized as empty records
-in.path = "in.wav";
-in.rate = 44100;
-out: sink;
-out.path = "out.wav";
-out.write = * (+ in.read foo) bar;
+# swag
+foo: int = ~a;
+dbg_out: int = foo;
