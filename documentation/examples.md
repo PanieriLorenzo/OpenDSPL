@@ -142,3 +142,60 @@ output.write     = wave.source
                 -> audio.effects.reverb("spring",  <other params>)
                 -> (* _ 0.5);
 ```
+
+## Function proposal:
+Change the function syntax to the following:
+```R
+foo: process = (x: int, y: int) -> (z: int, w: int) {
+    z = x + y;
+    w = x - y;
+}
+
+# calling the function:
+bar: int = 2;
+baz: int = 1;
+a: int = 0;
+b: int = 0;
+(a, b) = foo(bar, baz);
+
+# now I/O is simplified, the toplevel code runs inside a main function. When
+# deploying to rust vst, the main takes 2 arguments (l, r) and returns 2 arguments (l, r)
+# in the future need for MIDI I/O and other deployment targets will change this
+main: process = (l_in: float, r_in: float) -> (l_out: float, r_out: float) {
+    # ...
+}
+```
+
+## Compiled code
+For now DSPL is compiled to rust-vst. All functions in dspl are inlined so that
+all '@' operators are extracted and converted into the `Effect` struct where
+all stateful variables are stored.
+
+## UI components
+UI stuff I haven't really thought about. Probably the easiest implementation is
+specifying which variables in the code are to be transformed into UI components
+rather than variables, by specifying them in the manifest file.
+
+## Manifest file
+Eventually I'd like to have a form of manifest file, perhaps in `.toml` format
+that specifies optimization level, target platform, UI stuff, Rust embeddings, ...
+## Embedding Rust
+For ease of development I want to implement a way to embed rust code into DSPL
+code. For now I am simply defining a list of reserved function identifiers which
+the compiler knows are special cases, but ideally there'd be a way of writing
+libraries in Rust and importing them in DSPL code.
+
+## Core Functions
+Beside the standard libraries, there is also a set of "core functions" which are
+do not need to be imported to be used. These are very basic functionalities like
+control structures and host-related stuff.
+
++ `getsr() -> int`: returns the current sample rate
++ `if_i(cond: bool, then: int, else: int) -> int`: if-then-else for int expressions
++ `if_f(cond: bool, then: float, else: float) -> float`: if_then_else for float expressions
++ `for(start: int, num: int) -> int`: produces num events per incoming event, in
+other words any part of the program that use a value which can be traced back to
+a for function will be put into a for loop in code generation. The output is an
+index. It can be used for list processing or for running parts of the code at
+a higher sample rate (oversampling). Any discrepancies in sample rates will be
+solved with interpolation (the quality of which can be decided in the manifest)

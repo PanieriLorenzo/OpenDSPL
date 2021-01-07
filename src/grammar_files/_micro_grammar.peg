@@ -1,0 +1,74 @@
+comment     = r"#.*"
+program     = (statement / comment)* EOF
+statement   = definition ";"
+
+
+definition  = (identifier / dbg_out) ":" type "=" expr
+
+
+type        = int / float / bool
+int         = "int"
+float       = "float"
+bool        = "bool"
+
+
+todo_2      = "$ TODO: make plugs"
+expr            = plug_expr
+plug_expr       = or_expr (plug or_expr)*
+or_expr         = and_expr (or and_expr)*
+and_expr        = not_expr (and not_expr)*
+not_expr        = not* cmp_expr
+cmp_expr        = bit_or_expr ((less / leq / grt / geq / eq / neq) bit_or_expr)*
+bit_or_expr     = bit_xor_expr (bit_or bit_xor_expr)*
+bit_xor_expr    = bit_and_expr (bit_xor bit_and_expr)*
+bit_and_expr    = bit_shift_expr (bit_and bit_shift_expr)*
+bit_shift_expr  = add_expr ((lshift / rshift) add_expr)*
+add_expr        = mul_expr ((add / sub) mul_expr)*
+mul_expr        = delay_expr ((mul / div / mod) delay_expr)*
+delay_expr      = bit_not_expr (delay bit_not_expr)*
+bit_not_expr    = bit_not* paren_expr
+paren_expr      = "(" expr ")"
+                / literal
+                / identifier
+                / dbg_in
+                / call
+
+
+bit_not     = "~"
+mul         = "*"
+div         = "/"
+mod         = "%"
+delay       = "@"
+add         = "+"
+sub         = "-"
+lshift      = "<<"
+rshift      = ">>"
+bit_and     = "&"
+bit_xor     = "^"
+bit_or      = "|"
+less        = "<"
+leq         = "<="
+grt         = ">"
+geq         = ">="
+eq          = "=="
+neq         = "!="
+not         = "not"
+and         = "and"
+or          = "or"
+plug        = "->"
+
+literal     = lit_float / lit_int / lit_bool
+lit_int     = r"-?[0-9]+"
+lit_float   = r"-?[0-9]*\.[0-9]+"
+lit_bool    = true / false
+true        = "true"
+false       = "false"
+
+
+call        = identifier "(" (identifier ("," identifier)*)? ")"
+todo_1      = "$ TODO: make lambdas"
+
+
+dbg_in      = "dbg_in"
+dbg_out     = "dbg_out"
+identifier  = r"[a-zA-Z_]\w*"
