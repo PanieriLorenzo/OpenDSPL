@@ -314,27 +314,110 @@ yet.
 The manifest file is used to decide a few parameters in the compilation process.
 It follows the `.toml` format:
 ```toml
+[module_info]
+name = "test"
+inputs = 2
+outputs = 2
+
+[ui.<id>]    # sets names to the different ui elements based on id
+name = "parameter name"
+
 [options]               # changes the semantic analyzer's behavior
 debug = true        # enables debugging in the arpeggio parser and AST
 target = "rust_vst" # compile to Rust code with vst framework
+fp_precision = "low"   # floating point precision: 32 or 64
 
 [target.<target_name>]    # settings specific for the target <target_name>, for
                           # example, the rust compile:
 [target.rust_vst]
 partial = false     # if set to true, the generated rust code isn't compiled to
-                    # binary.
-precision = 32      # change variable precision. This gives i32, u32 and f32
-                    # a value of 16 would give i16, u16 and f32
-                    # a value of 64 would give i64, u64 and f64
+                    # binary
 opt_level = 3       # optimization level (passed to Cargo toml)
 lto = true          # link-time optimization (passed to Cargo toml)
 
-
 [target.dspl_object]    # runnable object file
-precision = 32      # stores the desired precision in the header. If the compiler
-                    # or interpreter running this object file supports it, the
-                    # precision is set, otherwise it is ignored
 
+```
+
+## Core Library
+The core library is written in Rust with vst framework and isn't compiled, any new 
+target in a different language needs to re-implement these. It is kept at a bare
+minimum, resembling the Reaktor core atoms for the most part.
+```Rust
+// prototype:   i_to_f(x: int) -> (y: float)
+// description: casts integer to float
+x as f32;
+
+// prototype:   f_to_i(x: float) -> (y: int)
+// description: casts float to integer
+x as i32;
+
+// prototype:   ui_raw(id: int) -> (y: float)
+// description: adds a parameter to the user interface, returns x in [0; 1]
+// [...] some code omitted
+this.params._1.get(); 
+// [---] some code omitted
+
+// prototype:   i_abs(x: int) -> (y: int)
+// description: returns the absolute value of x
+x.abs();
+
+// prototype:   f_abs(x: float) -> (y: float)
+// description: returns the absolute value of x
+x.abs();
+
+// prototype:   log(x: float, b: float) -> (y: float)
+// description: returns the base b log of x
+x.log(b);
+
+// prototype:   exp(x: float) -> (y: float)
+// description: returns the base e exponential of x
+x.exp();
+
+// prototype:   f_pow(a: float, b: float) -> (y: float)
+// description: returns a^b
+a.powf(b);
+
+// prototype:   i_pow(a: int, b: int) -> (y: int)
+// description: returns a^b
+a.powi(b);
+
+// prototype:   sqrt(x: f32) -> (y: f32)
+// description: returns sqrt(x)
+x.sqrt(x);
+
+// you get the gist of the prototypes, here's a bunch
+x.sin();
+x.cos();
+x.asin();
+x.acos();
+// all other trig and hyp functions can be derived and are not core
+
+// prototype:   i_if(cond: bool, t: int, f: int) -> (x: int)
+// description: if statement
+if(cond) {
+    t
+} else {
+    f
+};
+
+// prototype:   f_if(cond: bool, t: float, f: float) -> (x: float)
+// description: if statement
+if(cond) {
+    t
+} else {
+    f
+};
+
+// prototype:   itr(num: int) -> (idx: int)
+// description: for loop, generates num indexes, from zero to num-1
+//      feeding it into any expression makes the expression part of the loop
+//      e.g:
+//      i: int = itr(5);
+//      a: [float] = i_to_f(i) -> sin();
+for i in 0..num{
+    /* some code */
+}
 ```
 
 # Planned Features
