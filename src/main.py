@@ -1,5 +1,6 @@
 import dspl_parser as pr
-import dspl_interpret as nt
+import dspl_semantics as se
+from arpeggio import visit_parse_tree
 
 def main():
     with open('grammar_files/_micro_grammar.peg', 'r') as file:
@@ -12,7 +13,9 @@ def main():
     # === PARSER / SEMANTIC ANALYSIS ===========================================
     # takes raw code string, converts it into a list of interdependant symbols
     parser = pr.ParserDSPL(grammar, root="block", dbg=False)
-    program = parser.parse(input)
+    analyzer = se.Visitor(debug=False)
+    ast = parser.parse(input)
+    program = visit_parse_tree(ast, analyzer)
     print(program.value)
 
 

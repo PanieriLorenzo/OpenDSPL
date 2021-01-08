@@ -1,3 +1,2 @@
 # swag
-foo: int = ~dbg_in;
-dbg_out: int = (1 -> foo);
+foo: int = ~1.1;

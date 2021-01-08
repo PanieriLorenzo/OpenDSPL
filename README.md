@@ -291,7 +291,7 @@ code, but it is an advantage if the output is compiled directly to binary to
 protect from de-compilation, or as an extra layer of obscurity on top of the
 proprietary object files.
 
-In case one of the operands is a literal, these conversions are made:
+In case one of the operands is a literal, these conversions are made: 
 + `3.14` becomes `13p14`
 + `-2` becomes `1m2`
 + `false` becomes `1f`
