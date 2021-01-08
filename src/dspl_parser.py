@@ -23,7 +23,8 @@ import dspl_types as tp
 class ParserDSPL:
     # TODO: change root to program and make the program a list of function definitions
     def __init__(self, grammar, root="block", dbg=False):
-        self.parser = ParserPEG(grammar, root, comment_rule_name=None, debug=dbg, reduce_tree=True)
+        self.parser = ParserPEG(grammar, root, comment_rule_name=None, 
+            debug=dbg, reduce_tree=True)
         self.parser.autokwd = True
     
     def parse(self, input: str, dbg=False):
@@ -46,11 +47,17 @@ class ParserDSPL:
 # takes AST from parser, and produces a list of symbols
 
 class Visitor(PTNodeVisitor):
+    def __init__(self, debug):
+        super().__init__(debug)
+        
     
     # === DEFINITION ===========================================================
     def visit_definition(self, node, children):
         # validation: type and expr must have matching types
         pass
+
+    # === DELAY EXPRESSION =====================================================
+    # delay expressions are quite complex in terms of code generation
 
     # === BITWISE NOT EXPRESSION ===============================================
     def visit_bit_not_expr(self, node, children):
@@ -74,6 +81,11 @@ class Visitor(PTNodeVisitor):
         symb = tp.Symbol(type=Type.E_INT, value= "!" + str(children[1].value) )
         return symb
     
+    # === PARENTHESIZED EXPRESSION =============================================
+    ## def visit_paren_expr(self, node, children):
+        
+
+
     # === UNNAMED SYMBOLS (literals) ===========================================
     def visit_lit_int(self, node, children):
         symb = tp.Symbol(type=Type.I_INT, value= int(node.value))

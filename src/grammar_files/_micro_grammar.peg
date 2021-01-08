@@ -3,7 +3,7 @@ block       = (statement / comment)* EOF?
 statement   = definition ";"
 
 
-definition  = (identifier / dbg_out) ":" type "=" expr
+definition  = (dbg_out / identifier) ":" type "=" expr
 
 
 type        = int / float / bool
@@ -28,9 +28,9 @@ mul_expr        = delay_expr ((mul / div / mod) delay_expr)*
 delay_expr      = bit_not_expr (delay bit_not_expr)*
 bit_not_expr    = bit_not* paren_expr
 paren_expr      = "(" expr ")"
+                / dbg_in
                 / literal
                 / identifier
-                / dbg_in
                 / call
 
 

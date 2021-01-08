@@ -1,3 +1,3 @@
 # swag
-foo: int = ~a;
-dbg_out: int = foo;
+foo: int = ~dbg_in;
+dbg_out: int = (1 -> foo);
