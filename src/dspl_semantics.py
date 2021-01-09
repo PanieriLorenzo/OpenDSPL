@@ -10,6 +10,7 @@ from arpeggio.cleanpeg import ParserPEG
 from arpeggio import PTNodeVisitor
 from dspl_types import Type
 import dspl_types as tp
+import dspl_util as ut
 
 
 #########################
@@ -21,7 +22,7 @@ import dspl_types as tp
 
 class Visitor(PTNodeVisitor):
     def __init__(self, **kwargs):
-        self.scope_count = 0
+        self.scope_seq = 0
         self.symbol_table = []
         super(Visitor, self).__init__(**kwargs)
         
@@ -46,6 +47,18 @@ class Visitor(PTNodeVisitor):
             print(f"{tp.CliC.WARN}Warning: delay operator near:{tp.CliC.ENDC}")
             print("    '... ", node.value, " ...'")
             print(f"{tp.CliC.WARN}does nothing. Consider removing it.{tp.CliC.ENDC}")
+        
+        # store delay variable
+        dly_symb = tp.Symbol(tp.Type.DELAY, value = children[0])
+        dly_symb.expr_name = "_0" \
+                           + ut.to_base32(self.scope_seq) \
+                           + ut.to_base32(0) \
+                           + children[0].expr_name
+        dly_symb.is_delay = True
+        dly_symb.dly_depth = # TODO: depends on type of rhs
+        dly_symb.scope_seq = self.scope_seq
+
+        
 
 
     # === BITWISE NOT EXPRESSION ===============================================
@@ -61,13 +74,23 @@ class Visitor(PTNodeVisitor):
         
         # if operand is immediate value, calculate the value beforehand
         if(children[1].type == Type.I_INT):
-            symb = tp.Symbol(type=Type.I_INT, value= ~children[1].value)
+            val = ~children[1].value
+            symb = tp.Symbol(type=Type.I_INT, value= val)
+            symb.expr_name = "__1"
+            if val < 0:
+                symb.expr_name += "m"
+                val = -val
+                symb.expr_name += str(val)
             return symb
 
         # if operand is identifier, check if identifier is defined, then generate
         # source code
         # TODO: check if undefined and int, then raise a semantic error
+        lhs = ""
+        rhs = children[1].expr_name
         symb = tp.Symbol(type=Type.E_INT, value= "!" + str(children[1].value) )
+        symb.expr_name = ut.expr_name(lhs, rhs, tp.ExprNames.BIT_NOT)
+        print(symb.expr_name)
         return symb
     
     # === PARENTHESIZED EXPRESSION =============================================
@@ -101,15 +124,14 @@ class Visitor(PTNodeVisitor):
 
     # === NAMED SYMBOLS (identifiers) ==========================================
     # name generation scheme is the following:
-    # scope_name__identifier_name
-    # e.g if we run the following DSPL code inside a function called "foo":
-    #     bar: int = 14;
+    # _identifier_name
+    # e.g if we run the following DSPL code:
+    #     foo: int = 14;
     # we get the following Rust code:
-    #     let main__bar: i32 = 14;
-    #
-    # TODO: dynamically assign scope name
+    #     let _foo: i32 = 14;
     def visit_identifier(self, node, children):
-        symb = tp.Symbol(type=Type.IDENTIFIER, value= "main__" + node.value)
+        symb = tp.Symbol(type=Type.IDENTIFIER, value= "_" + node.value)
+        symb.expr_name = "_" + node.value
         return symb
 
     # === RESERVED SYMBOLS =====================================================

@@ -20,6 +20,7 @@ class Type(Enum):
     
     CODE = 10       # a formattable string containing partially compiled code
     IDENTIFIER = 15
+    DELAY = 17
 
     E_INT = 20
     E_FLOAT = 21
@@ -37,8 +38,15 @@ class Type(Enum):
 # an unassigned symbol simply has self.name == None
 class Symbol:
     def __init__(self, type=None, value=None):
+        self.expr_name = ""
         self.type = type
         self.value = value  # value is either literal or identifier name
+
+        # delay parameters, these are only set within a delay operation visitor
+        self.is_delay = False
+        self.dly_depth = 0
+        self.scope_seq = None
+
 
 # ansi escape codes for coloring output
 class CliC:
@@ -52,3 +60,28 @@ class CliC:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
+# operation names for expr_name generation
+class ExprNames:
+    BIT_NOT     = "1bno"
+    MUL         = "1mul"
+    DIV         = "1div"
+    MOD         = "1mod"
+    DELAY       = "1dly"
+    ADD         = "1add"
+    SUB         = "1sub"
+    LSHIFT      = "1lsh"
+    RSHIFT      = "1rsh"
+    BIT_AND     = "1bnd"
+    BIT_XOR     = "1bx"
+    BIT_OR      = "1bor"
+    LESS        = "1les"
+    LEQ         = "1leq"
+    GRT         = "1grt"
+    GEQ         = "1geq"
+    EQ          = "1eq"
+    NEQ         = "1neq"
+    NOT         = "1not"
+    AND         = "1and"
+    OR          = "1or"
+    PLUG        = "1plg"

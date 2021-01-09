@@ -235,7 +235,7 @@ To achieve this, some special care is needed for the part of the semantic analyz
 that handles delay operators. Firstly an additional symbol is added directly to
 the symbol table of the compiler, this represents the additional delay variables.
 (Using the expression above), the symbol for delay has these generic fields:
-+ `expr_name = "_a_add_11p0"` Is the symbolic conversion of the expression before
++ `expr_name = "_0aa__a_add_11p0"` Is the symbolic conversion of the expression before
     the delay operator.
 + `type = DELAY` Marks this as a delay variable, to be handled accordingly by the
     compiler
@@ -246,7 +246,7 @@ Because this is of type `DELAY`, the compiler expects these additional fields:
 + `depth = 1` Is the depth of the delay.
 + `scope_seq = 0` Integer representation of the scope sequence number
 
-Then the `+ 3` expression receives a different symbol, this time it is an ordinary
+Then the `+ 3` expression redceives a different symbol, this time it is an ordinary
 integer expression symbol:
 + `expr_name = "__a_add_11p0_dly_1"` Expression symbolic representation
 + `type = E_FLOAT`
@@ -279,7 +279,21 @@ The operator codes are the following:
 + `%` becomes `1mod`
 + `@` becomes `1dly`
 + `->` becomes `1plg`
-+ TODO: continue this list
++ `<` becomes `1les`
++ `<=` becomes `1leq`
++ `>` becomes `1grt`
++ `>=` becomes `1geq`
++ `==` becomes `1eq`
++ `!=` becomes `1neq`
++ `or` becomes `1or`
++ `and` becomes `1and`
++ `not` becomes `1not`
++ `<<` becomes `1lsh`
++ `>>` becomes `1rsh`
++ `&` becomes `1bnd`
++ `^` becomes `1bx`
++ `|` becomes `1bor`
++ `~` becomes `1bno`
 
 Notice the 1 before each code, this is to prevent users for naming a variable the
 same as one of these codes.

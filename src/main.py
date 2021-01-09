@@ -1,5 +1,6 @@
 import dspl_parser as pr
 import dspl_semantics as se
+import dspl_util as ut
 from arpeggio import visit_parse_tree
 
 def main():
@@ -8,6 +9,10 @@ def main():
 
     with open('test_1.odspl', 'r') as file:
         input = file.read()
+    
+    print(ut.to_base32(0))
+    print(ut.to_base32(32))
+    print(ut.to_base32(-1))
     
 
     # === PARSER / SEMANTIC ANALYSIS ===========================================
