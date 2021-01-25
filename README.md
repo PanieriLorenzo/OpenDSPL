@@ -1,3 +1,6 @@
+# DISCONTINUATION NOTICE
+**OpenDSPL has been discontinued, because a major re-design is in progress. The re-designed language will be closed-source as it is my bachelor thesis. It will be made open again at a later time. In the meantime you can look at the documentation on this page to get a feel of what the language will be like.**
+
 # OpenDSPL Overview
 OpenDSPL is a minimalistic semi-functional event-based digital signal processing
 programming language. Its syntax is heavily influenced by Lisp, Rust and Faust (
